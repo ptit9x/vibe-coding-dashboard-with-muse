@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Fira+Code:wght@400;500&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Ledgerline ERP — design tokens (Phase 2)
+  Palette (frontend-design plan, revised from the ui-ux-pro-max recommendation):
+    Petrol ink   #14201E  text / dark surfaces
+    Deep petrol  #0B5B52  primary — ledger green, not generic SaaS blue
+    Mist         #F4F6F5  app background (cool, not warm cream)
+    Paper        #FFFFFF  surfaces
+    Line         #D9E0DD  borders
+    Amber        #B45309  warning/status only — never a CTA colour
+  Type: Archivo (display) · Fira Sans (UI/body) · Fira Code (real codes & tabular numbers only)
+*/
+:root {
+  --radius: 0.5rem;
+
+  --background: #f4f6f5;
+  --foreground: #14201e;
+  --card: #ffffff;
+  --card-foreground: #14201e;
+  --popover: #ffffff;
+  --popover-foreground: #14201e;
+
+  --primary: #0b5b52;
+  --primary-foreground: #ffffff;
+  --secondary: #e6efec;
+  --secondary-foreground: #17332e;
+  --muted: #e8eceb;
+  --muted-foreground: #4d5f5a;
+  --accent: #e6efec;
+  --accent-foreground: #17332e;
+
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --success: #0b5b52;
+  --success-foreground: #ffffff;
+
+  --border: #d9e0dd;
+  --input: #cbd5d1;
+  --ring: #0b5b52;
+
+  /* Sidebar is the one bold element: a deep petrol rail in both themes. */
+  --sidebar: #0e2a26;
+  --sidebar-foreground: #d7e5e0;
+  --sidebar-primary: #5ec2b1;
+  --sidebar-primary-foreground: #0e2a26;
+  --sidebar-accent: #17453e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1d403a;
+  --sidebar-ring: #5ec2b1;
+
+  --chart-1: #0b5b52;
+  --chart-2: #5ec2b1;
+  --chart-3: #b45309;
+  --chart-4: #64748b;
+  --chart-5: #17332e;
+}
+
+.dark {
+  --background: #0d1413;
+  --foreground: #e6edea;
+  --card: #141e1c;
+  --card-foreground: #e6edea;
+  --popover: #141e1c;
+  --popover-foreground: #e6edea;
+
+  --primary: #3ba99c;
+  --primary-foreground: #081714;
+  --secondary: #1d2b28;
+  --secondary-foreground: #e6edea;
+  --muted: #1d2b28;
+  --muted-foreground: #a7bab4;
+  --accent: #1d2b28;
+  --accent-foreground: #e6edea;
+
+  --destructive: #e5736b;
+  --destructive-foreground: #1a0b0a;
+  --warning: #e8a33d;
+  --warning-foreground: #1a1206;
+  --success: #3ba99c;
+  --success-foreground: #081714;
+
+  --border: #263431;
+  --input: #334743;
+  --ring: #3ba99c;
+
+  --sidebar: #0a201c;
+  --sidebar-foreground: #d7e5e0;
+  --sidebar-primary: #5ec2b1;
+  --sidebar-primary-foreground: #0a201c;
+  --sidebar-accent: #17453e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1d403a;
+  --sidebar-ring: #5ec2b1;
+
+  --chart-1: #3ba99c;
+  --chart-2: #5ec2b1;
+  --chart-3: #e8a33d;
+  --chart-4: #94a3b8;
+  --chart-5: #d7e5e0;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: 'Fira Sans', ui-sans-system, system-ui, sans-serif;
+  --font-display: 'Archivo', 'Fira Sans', ui-sans-system, system-ui, sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  /* Visible keyboard focus everywhere (ui-ux-pro-max + senior-frontend). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Tabular numbers for data, without making every label monospace. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
