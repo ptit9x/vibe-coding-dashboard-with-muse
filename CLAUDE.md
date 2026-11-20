@@ -1,7 +1,7 @@
 # CLAUDE.md — Ledgerline ERP (Operations Console)
 
 Guidance for any AI coding agent working in this repository. This file was
-written from a scan of the actual tree on 2026-11-18. If the code and this
+written from a scan of the actual tree on 2026-11-18, and updated the same day for the Phase 3 + 4 build. If the code and this
 file disagree, the code wins — and update this file in the same change.
 
 ## What this project is
@@ -10,28 +10,28 @@ A runnable React + Vite foundation and reusable enterprise application
 shell for "Ledgerline ERP", an operations console for a mid-size
 trading/distribution company. Built from an ERP Master Prompt, in phases.
 
-**Current scope: Phase 1 + Phase 2 only.**
+**Current scope: Phase 1 + Phase 2 + Phase 3 + Phase 4.**
 
 - Phase 1: project foundation, routing, folder structure.
 - Phase 2: design system (tokens, UI primitives) and the AppShell
   (sidebar, header, theme switching).
+- Phase 3: mock-demo authentication, protected routing, RBAC and
+  permission-aware navigation (see "Auth and RBAC" below).
+- Phase 4: functional executive dashboard on realistic mock APIs —
+  KPI cards, URL-driven filters, charts (see "Dashboard and mock API").
 
 **What does NOT exist yet — do not assume it does:**
 
-- No backend, no API calls, no network requests of any kind.
-- No authentication, no login page, no route guards, no RBAC/permissions.
-- No real business modules. Sales, Inventory, Purchasing, Finance, People
-  and Reports render an honest placeholder page inside the shell.
-- No test setup (no Vitest config, no test files) in this tree.
-- Dashboard data is sample data and is labelled as such in the UI.
-  Header search and the notifications panel are shell demonstrations
-  with "not connected yet" feedback, not working features.
-
-Phase 3 + 4 (mock-demo authentication, protected routing, RBAC,
-permission-aware navigation, functional dashboard with mock APIs) were
-requested separately but are **not in this tree** as of the scan date.
-If you are asked to implement them, preserve the architecture and design
-system below instead of restructuring.
+- No backend and no real API. Authentication and dashboard data are
+  **mocked locally on purpose** (demo accounts in `src/lib/mock-auth.ts`,
+  seeded data in `src/lib/mock-data.ts`). There are no network requests
+  except the Google Fonts import.
+- No real business modules. Sales, Inventory, Purchasing, Finance,
+  People and Reports render an honest placeholder page inside the
+  shell — now behind their RBAC route guards.
+- Header search and the notifications panel are still shell
+  demonstrations with "not connected yet" feedback, not working
+  features.
 
 ## Commands
 
@@ -40,16 +40,16 @@ npm install
 npm run dev       # Vite dev server, http://localhost:5173
 npm run build     # tsc -b (typecheck) + vite build — must pass before delivery
 npm run lint      # oxlint
+npm test          # vitest run — 22 tests (RBAC, mock auth/API, guards)
 npm run preview   # serve the production build
 ```
 
-There is no test command yet. Do not invent one in instructions or CI
-until a test runner is actually added to `package.json`.
-
-Expected lint state: 0 errors, 3 warnings. The warnings are the accepted
-shadcn pattern of exporting `*Variants` helpers / `useTheme` beside
-components, which trips `react/only-export-components` (fast-refresh
-only). Do not "fix" them by restructuring the UI primitives.
+Expected lint state: 0 errors, 5 warnings. The warnings are the accepted
+shadcn pattern of exporting `*Variants` helpers / hooks / a helper
+function beside components (`button.tsx`, `badge.tsx`,
+`theme-provider.tsx`, `auth-provider.tsx`, `cash-flow-bars.tsx`), which
+trips `react/only-export-components` (fast-refresh only). Do not "fix"
+them by restructuring the UI primitives.
 
 ## Stack
 
@@ -72,8 +72,11 @@ Entry flow:
 ```
 index.html            inline theme script runs before first paint
 src/main.tsx          StrictMode → <App />
-src/App.tsx           <ThemeProvider> → <RouterProvider router={router} />
-src/app/router.tsx    one shell route, one child route per module
+src/App.tsx           <ThemeProvider> → <AuthProvider> →
+                      <RouterProvider router={router} />
+src/app/router.tsx    /login public; shell route behind <RequireAuth>,
+                      one child route per module, each behind
+                      <RequirePermission> with its nav permission
 src/components/layout/app-shell.tsx
                       skip link → sidebar / mobile drawer → header →
                       <main id="main-content"> <Outlet /> </main> → footer
@@ -86,15 +89,22 @@ chrome (sidebar, header, breadcrumbs) — extend the shell instead.
 
 ```
 src/
-  app/          router.tsx, theme-provider.tsx
+  app/          router.tsx, theme-provider.tsx, auth-provider.tsx,
+                route-guards.tsx, route-guards.test.tsx
   components/
     ui/         button, card, badge, input, avatar, separator, skeleton
     layout/     app-shell, sidebar, header, page-header, theme-toggle
+    dashboard/  kpi-card, revenue-chart, orders-donut, cash-flow-bars
   config/       navigation.ts — single source of truth for modules
-  pages/        dashboard-page, settings-page,
+                permissions.ts, permissions.test.ts — RBAC model
+  hooks/        use-dashboard-data.ts
+  pages/        dashboard-page, login-page, settings-page,
                 module-placeholder-page, not-found-page
-  lib/          utils.ts — cn() only, for now
-docs/           DESIGN.md (design rationale), REVIEW.md (Phase 1+2 review)
+  lib/          utils.ts (cn), format.ts, mock-auth.ts, mock-api.ts,
+                mock-data.ts, mock-services.test.ts
+  test/         setup.ts — Vitest + jest-dom setup (vitest.config.ts)
+docs/           DESIGN.md (design rationale), REVIEW.md (self-review,
+                Phase 1+2 plus the Phase 3+4 addendum)
 .claude/skills/ project skills — see "Project skills" below
 ```
 
@@ -105,26 +115,80 @@ docs/           DESIGN.md (design rationale), REVIEW.md (Phase 1+2 review)
 and `findNavItem(pathname)`. The sidebar, mobile drawer, header
 breadcrumb and the router all derive from it.
 
-| Route         | Page                    | State                                  |
-| ------------- | ----------------------- | -------------------------------------- |
-| `/`           | `DashboardPage`         | Real shell page, labelled sample data |
-| `/sales`      | `ModulePlaceholderPage` | Not built — empty state + skeletons    |
-| `/inventory`  | `ModulePlaceholderPage` | Not built                              |
-| `/purchasing` | `ModulePlaceholderPage` | Not built                              |
-| `/finance`    | `ModulePlaceholderPage` | Not built                              |
-| `/people`     | `ModulePlaceholderPage` | Not built                              |
-| `/reports`    | `ModulePlaceholderPage` | Not built                              |
-| `/settings`   | `SettingsPage`          | Real (incl. Appearance / theme)        |
-| `*`           | `NotFoundPage`          | Real error state with a way back       |
+| Route         | Page                    | Guard permission   | State                             |
+| ------------- | ----------------------- | ------------------ | --------------------------------- |
+| `/login`      | `LoginPage`             | — (only public route) | Real, mock demo accounts       |
+| `/`           | `DashboardPage`         | `dashboard:view`   | Real, functional on mock API      |
+| `/sales`      | `ModulePlaceholderPage` | `sales:view`       | Not built — empty state + skeletons |
+| `/inventory`  | `ModulePlaceholderPage` | `inventory:view`   | Not built                         |
+| `/purchasing` | `ModulePlaceholderPage` | `purchasing:view`  | Not built                         |
+| `/finance`    | `ModulePlaceholderPage` | `finance:view`     | Not built                         |
+| `/people`     | `ModulePlaceholderPage` | `people:view`      | Not built                         |
+| `/reports`    | `ModulePlaceholderPage` | `reports:view`     | Not built                         |
+| `/settings`   | `SettingsPage`          | `settings:manage`  | Real (account, Appearance/theme)  |
+| `*`           | `NotFoundPage`          | — (inside shell)   | Real error state with a way back  |
 
 In `router.tsx`, module placeholder routes are generated from
-`ALL_NAV_ITEMS` (excluding `/` and `/settings`). To add a module:
+`ALL_NAV_ITEMS` (excluding `/` and `/settings`), each wrapped in
+`RequirePermission` with the item's own permission. To add a module:
 
-1. Add the item to `navigation.ts` — sidebar, drawer, breadcrumb and a
-   placeholder route pick it up automatically.
-2. Replace its placeholder route in `router.tsx` with the real page.
+1. Add the item (with its `permission`) to `navigation.ts` — sidebar,
+   drawer, breadcrumb and a guarded placeholder route pick it up
+   automatically.
+2. Replace its placeholder route in `router.tsx` with the real page,
+   keeping the `RequirePermission` wrapper.
 3. Build the page from `components/ui/*` + `PageHeader`. Do not add new
    colours or a second button style — extend tokens/components instead.
+
+## Auth and RBAC (Phase 3)
+
+- `src/config/permissions.ts` is the RBAC model: permissions are
+  `<module>:<action>` strings (`dashboard:view`, `sales:create`,
+  `purchasing:approve`, `settings:manage`, …); roles (`admin`,
+  `operations-manager`, `accountant`, `viewer`) are bundles of them in
+  `ROLE_PERMISSIONS`. Code only ever asks `can(permission)` /
+  `hasPermission(...)` — never "is this role X?". A new role is data.
+- `src/lib/mock-auth.ts` is **demo-only mock authentication**: 4 demo
+  accounts, one shared demo password (shown on the login screen),
+  500 ms simulated latency, fake readable token. `loadSession()`
+  re-validates a stored session against the account list and the
+  account's current role permissions — forged tokens return null.
+  Never reuse this pattern with real credentials; production auth must
+  verify server-side and issue signed, expiring tokens.
+- `src/app/auth-provider.tsx`: `useAuth()` → `user`, `isAuthenticated`,
+  `login`, `logout`, `can`. Session persists in `localStorage` under
+  `ledgerline-session` (third key — see "Theme and persisted state").
+- `src/app/route-guards.tsx`: `RequireAuth` redirects signed-out
+  visitors to `/login` with the intended path in location state (login
+  returns them there). `RequirePermission` renders a real 403 page
+  naming the missing permission — not a blank screen or silent
+  redirect.
+- Navigation is permission-aware: `visibleNavGroups(can)` in
+  `navigation.ts` filters nav items by permission and drops empty
+  groups. Hiding a menu is never the only protection — the router
+  guards the same permission on the route itself.
+- Demo accounts: `admin@` / `manager@` / `accountant@` / `viewer@`
+  at `ledgerline.vn`; the password is the `DEMO_PASSWORD` constant in
+  `mock-auth.ts`, also printed on the login screen. Settings shows the
+  signed-in user's role and full permission list.
+
+## Dashboard and mock API (Phase 4)
+
+- `src/lib/mock-data.ts`: deterministic seeded data (mulberry32,
+  mock "today" fixed at 2026-11-18). Same `(range, branch)` → same
+  numbers in app and tests; KPI revenue equals the sum of the daily
+  series; deltas compare with the previous period of the same length.
+- `src/lib/mock-api.ts`: `fetchDashboard(query, { latencyMs,
+  simulateError })` mimics a real HTTP client (async, latency,
+  failures). `src/hooks/use-dashboard-data.ts` keeps previous data on
+  refetch, drops stale responses, and surfaces errors as messages.
+- Dashboard filters live in the URL: `?range=7|30|90&branch=all|hcm|
+  hanoi|danang`. Keep new dashboard state in search params the same
+  way. Actions are permission-aware (e.g. "New sales order" requires
+  `sales:create`); Export CSV and Refresh are real.
+- Charts are hand-built SVG in `components/dashboard/` with accessible
+  alternatives (data table, text summaries) — do not swap in a chart
+  library without preserving those.
 
 ## Design system
 
@@ -172,11 +236,15 @@ shadcn-style, built on `cn()` (`src/lib/utils.ts`) and cva variants:
 - The inline script in `index.html` applies the saved theme before first
   paint to avoid a flash — if you change the storage key or logic,
   change both places together.
-- Exactly two `localStorage` keys exist, both read/written inside
+- Exactly three `localStorage` keys exist, all read/written inside
   try/catch (storage may be unavailable):
   - `ledgerline-theme` (theme provider + `index.html` script)
   - `ledgerline-sidebar-collapsed` (`app-shell.tsx`, `'1'` / `'0'`)
-- There is no other storage and there are no secrets in this app.
+  - `ledgerline-session` (mock auth session, `src/lib/mock-auth.ts`;
+    re-validated on load — see "Auth and RBAC")
+- There is no other storage. The only "secret" in the app is the
+  shared demo password in `mock-auth.ts`, which is public by design
+  (printed on the login screen) and must never become a real one.
 
 ## Shell behaviour
 
@@ -186,8 +254,11 @@ shadcn-style, built on `cn()` (`src/lib/utils.ts`) and cva variants:
   closes it; it renders `SidebarContent` with an `onNavigate` close.
 - Header: breadcrumb derived from the current route via `findNavItem`,
   a labelled global search form whose submit feedback goes to an
-  `aria-live` region, a notifications panel, `ThemeToggle`, and a static
-  user identity block (no auth behind it yet).
+  `aria-live` region, a notifications panel, `ThemeToggle`, the real
+  signed-in user/role block, and a working Sign out button. The
+  sidebar footer carries the same identity + Sign out, and the
+  sidebar/drawer render only the nav items the user's permissions
+  allow (`visibleNavGroups`).
 - `PageHeader` is the one `<h1>` per page, with optional description,
   badge and actions row.
 
@@ -228,19 +299,24 @@ in this repo. Do not modify or delete them unless explicitly asked.
 - `docs/DESIGN.md` — the design plan and why the generic generator
   defaults (blue primary, orange CTA, mono headings, card grid) were
   revised. Binding for visual work.
-- `docs/REVIEW.md` — the Phase 1 + 2 self-review: findings fixed,
-  verification evidence, known limitations. Check it before re-auditing
-  something it already covered.
+- `docs/REVIEW.md` — the self-review: Phase 1 + 2 findings and the
+  Phase 3 + 4 addendum (tests, build, browser audit evidence, mock-auth
+  limitations). Check it before re-auditing something it already covered.
 
 ## Verification before saying "done"
 
 1. `npm run build` passes (this includes the typecheck).
-2. `npm run lint` shows 0 errors (the 3 accepted warnings above are OK).
-3. Check the changed screens in a browser at a small width (~375 px)
+2. `npm test` passes — 22 tests (do not delete a failing test to get
+   green; fix the code or the test's premise).
+3. `npm run lint` shows 0 errors (the 5 accepted warnings above are OK).
+4. Check the changed screens in a browser at a small width (~375 px)
    and desktop (~1280 px): no horizontal overflow, no page errors,
-   visible keyboard focus, light and dark themes both sane.
+   visible keyboard focus, light and dark themes both sane. For auth
+   changes, also verify: signed-out redirect to `/login`, login return
+   to the intended page, a low-permission role's 403 on a direct URL,
+   and that role's filtered navigation.
 
-Known limitations recorded in `docs/REVIEW.md`: one ~374 kB JS chunk
-(route-level code-splitting is deferred until real modules land), and
+Known limitations recorded in `docs/REVIEW.md`: one ~404 kB JS chunk
+(route-level code-splitting is deferred until real modules land),
 audit screenshots from sandboxes without Google Fonts access render
-with fallback fonts.
+with fallback fonts, and authentication is a front-end demo only.

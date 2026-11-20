@@ -27,8 +27,8 @@ export function ModulePlaceholderPage({ item }: { item: NavItem }) {
         <div className="flex max-w-md flex-col gap-2">
           <h2 className="font-display text-lg font-semibold">No {item.label.toLowerCase()} records yet</h2>
           <p className="text-sm text-muted-foreground">
-            This module is outside Phase 1 + 2. The application shell, routing and design system are
-            ready for it — its screens, data and workflows arrive in its own phase.
+            This module is not built yet. The shell, authentication, routing, permissions and
+            design system are ready for it — its screens, data and workflows arrive in its own phase.
           </p>
         </div>
         <Button disabled aria-describedby="module-disabled-note">

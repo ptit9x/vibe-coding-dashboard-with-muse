@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react'
 
+import { useAuth } from '@/app/auth-provider'
 import { useTheme, type ThemePreference } from '@/app/theme-provider'
 import { PageHeader } from '@/components/layout/page-header'
 import {
@@ -9,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ROLE_LABELS } from '@/config/permissions'
 import { cn } from '@/lib/utils'
 
 const THEME_OPTIONS: Array<{ value: ThemePreference; label: string; hint: string }> = [
@@ -18,20 +21,60 @@ const THEME_OPTIONS: Array<{ value: ThemePreference; label: string; hint: string
 ]
 
 /**
- * Settings is a placeholder module, except for Appearance:
- * theme switching is Phase 2 scope, so this control is real and wired
- * to the same ThemeProvider as the header toggle.
+ * Settings: Account (Phase 3 — the signed-in demo user, role and
+ * permissions) and Appearance (Phase 2 — theme switching, wired to the
+ * same ThemeProvider as the header toggle) are real. Company profile,
+ * user management and numbering are not built yet.
  */
 export function SettingsPage() {
   const { preference, resolved, setPreference } = useTheme()
+  const { user } = useAuth()
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
         title="Settings"
-        description="Company profile, users and roles, numbering and preferences. Only Appearance is active in Phase 2."
-        badge="Appearance active"
+        description="Company profile, users and roles, numbering and preferences. Account and Appearance below are active; the rest arrives with its module."
+        badge="Account + Appearance active"
       />
+
+      {user && (
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>
+              Signed in with a mock demo account (Phase 3). Your role decides which modules
+              appear in navigation and which routes open.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="flex flex-col gap-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <dt className="text-muted-foreground">Name</dt>
+                <dd className="font-medium">{user.name}</dd>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <dt className="text-muted-foreground">Email</dt>
+                <dd className="font-medium">{user.email}</dd>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <dt className="text-muted-foreground">Role</dt>
+                <dd><Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge></dd>
+              </div>
+              <div className="flex flex-col gap-2">
+                <dt className="text-muted-foreground">Permissions</dt>
+                <dd className="flex flex-wrap gap-1.5">
+                  {user.permissions.map((permission) => (
+                    <Badge key={permission} variant="outline" className="font-mono font-normal">
+                      {permission}
+                    </Badge>
+                  ))}
+                </dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="max-w-2xl">
         <CardHeader>

@@ -1,10 +1,12 @@
-import { Building2, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { Building2, ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { NAV_GROUPS } from '@/config/navigation'
+import { useAuth } from '@/app/auth-provider'
+import { ROLE_LABELS } from '@/config/permissions'
+import { visibleNavGroups } from '@/config/navigation'
 import { cn } from '@/lib/utils'
 
 interface SidebarContentProps {
@@ -19,6 +21,8 @@ interface SidebarContentProps {
  * mobile drawer. Navigation data comes only from config/navigation.ts.
  */
 export function SidebarContent({ collapsed = false, onNavigate, onToggleCollapsed }: SidebarContentProps) {
+  const { user, can, logout } = useAuth()
+  const groups = visibleNavGroups(can)
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className={cn('flex items-center gap-3 px-4 pt-5 pb-4', collapsed && 'justify-center px-2')}>
@@ -38,7 +42,7 @@ export function SidebarContent({ collapsed = false, onNavigate, onToggleCollapse
       <Separator className="bg-sidebar-border" />
 
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-5">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.label} className="flex flex-col gap-1">
             {!collapsed && (
               <p className="px-2 pb-1 text-xs font-semibold tracking-wide text-sidebar-foreground/60">
@@ -78,14 +82,28 @@ export function SidebarContent({ collapsed = false, onNavigate, onToggleCollapse
 
       <div className={cn('flex items-center gap-3 px-4 py-4', collapsed && 'flex-col px-2')}>
         <Avatar className="size-9">
-          <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground">RH</AvatarFallback>
+          <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground">
+            {user?.initials ?? '—'}
+          </AvatarFallback>
         </Avatar>
         {!collapsed && (
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-sm font-medium text-white">Richard Huynh</span>
-            <span className="truncate text-xs text-sidebar-foreground/70">Administrator</span>
+            <span className="truncate text-sm font-medium text-white">{user?.name ?? 'Signed out'}</span>
+            <span className="truncate text-xs text-sidebar-foreground/70">
+              {user ? ROLE_LABELS[user.role] : ''}
+            </span>
           </span>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={logout}
+          aria-label="Sign out"
+          title="Sign out"
+          className="shrink-0 text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
+        >
+          <LogOut data-icon aria-hidden="true" />
+        </Button>
         {onToggleCollapsed && (
           <Button
             variant="ghost"

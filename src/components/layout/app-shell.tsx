@@ -101,7 +101,7 @@ export function AppShell() {
           <Outlet />
         </main>
         <footer className="border-t px-4 py-4 text-sm text-muted-foreground sm:px-6 lg:px-8">
-          Ledgerline ERP — Phase 1 + 2 shell. Module data arrives in later phases.
+          Ledgerline ERP — operations console. Dashboard runs on mock data; other modules arrive in their own phases.
         </footer>
       </div>
     </div>

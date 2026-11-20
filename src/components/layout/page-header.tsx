@@ -23,7 +23,7 @@ export function PageHeader({ title, description, badge, actions }: PageHeaderPro
         </div>
         {description && <p className="max-w-prose text-muted-foreground">{description}</p>}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex max-w-full flex-wrap items-center gap-2">{actions}</div>}
     </div>
   )
 }

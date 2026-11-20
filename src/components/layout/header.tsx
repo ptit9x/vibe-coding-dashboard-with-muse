@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, Menu, Search } from 'lucide-react'
+import { Bell, ChevronRight, LogOut, Menu, Search } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useAuth } from '@/app/auth-provider'
+import { ROLE_LABELS } from '@/config/permissions'
 import { findNavItem } from '@/config/navigation'
 
 interface HeaderProps {
@@ -20,6 +22,7 @@ const NOTIFICATIONS = [
 ]
 
 export function Header({ onOpenMobileNav }: HeaderProps) {
+  const { user, logout } = useAuth()
   const location = useLocation()
   const current = findNavItem(location.pathname)
   const [searchMessage, setSearchMessage] = useState('')
@@ -115,14 +118,19 @@ export function Header({ onOpenMobileNav }: HeaderProps) {
 
         <ThemeToggle />
 
-        <div className="hidden items-center gap-3 sm:flex">
+        <div className="hidden items-center gap-2 sm:flex">
           <Avatar className="size-9">
-            <AvatarFallback>RH</AvatarFallback>
+            <AvatarFallback>{user?.initials ?? '—'}</AvatarFallback>
           </Avatar>
           <span className="hidden min-w-0 flex-col xl:flex">
-            <span className="truncate text-sm leading-tight font-medium">Richard Huynh</span>
-            <span className="truncate text-xs leading-tight text-muted-foreground">Administrator</span>
+            <span className="truncate text-sm leading-tight font-medium">{user?.name ?? ''}</span>
+            <span className="truncate text-xs leading-tight text-muted-foreground">
+              {user ? ROLE_LABELS[user.role] : ''}
+            </span>
           </span>
+          <Button variant="ghost" size="icon" onClick={logout} aria-label="Sign out" title="Sign out">
+            <LogOut data-icon aria-hidden="true" />
+          </Button>
         </div>
       </div>
 
